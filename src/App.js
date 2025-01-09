@@ -5,17 +5,17 @@ import React, {
 
 import Lottie from 'lottie-web';
 
-import animationData from './assets/loading-animation.json';  // 假设你有Lottie动画资源
-import SuccessAnimation from './assets/SuccessAnimation';  // 导入成功动画组件
+import animationData from './assets/loading-animation.json';  // 加载等待动画
+import SuccessAnimation from './SuccessAnimation';  // 导入成功动画组件
 import {
   fetchRewardData,
   getHistoryFromLocalStorage,
-  processRedemption,
+  processRedemptionWithConcurrency,
   removeDuplicateCodes,
   saveHistoryToLocalStorage,
   validateActivationCodeFormat,
 } from './utils';
-import { reportWebVitals } from './web-vitals'; // 自定义Web Vitals报告函数
+import { reportWebVitals } from './web-vitals'; // 性能监控
 
 function App() {
   const [codes, setCodes] = useState('');
@@ -26,6 +26,7 @@ function App() {
   const [rewardsPreview, setRewardsPreview] = useState([]);
   const [failedCodes, setFailedCodes] = useState([]);
   const [isRetried, setIsRetried] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);  // 新增状态，标记兑换是否成功
 
   useEffect(() => {
     // 初始化Lottie动画
@@ -43,6 +44,7 @@ function App() {
     // 加载历史记录
     const history = getHistoryFromLocalStorage();
     setActivationHistory(history);
+
     // 捕获并报告 Web Vitals 性能指标
     reportWebVitals(console.log); // 或发送到后端/Google Analytics等
   }, []);
@@ -68,8 +70,8 @@ function App() {
     setIsProcessing(true);
     setFailedCodes([]);
 
-    // 批量处理兑换
-    const { results, failedCodes } = await processRedemption(uniqueCodes);
+    // 批量处理兑换，设置最大并发数为5
+    const { results, failedCodes } = await processRedemptionWithConcurrency(uniqueCodes, 5);
 
     const successCount = results.length;
     const failedCount = failedCodes.length;
@@ -78,6 +80,20 @@ function App() {
     setResult({ successCount, failedCount });
     setFailedCodes(failedCodes);
     setIsProcessing(false);
+    setIsSuccess(successCount > 0);  // 如果成功兑换的数量大于0，标记为成功
+
+    // 向 Service Worker 发送兑换记录数据
+    if (navigator.serviceWorker.controller) {
+      navigator.serviceWorker.controller.postMessage({
+        type: 'SAVE_REDEMPTION',
+        payload: {
+          date: new Date(),
+          successCount,
+          failedCount,
+          failedCodes
+        }
+      });
+    }
 
     // 更新历史记录
     const newHistory = [
@@ -90,7 +106,7 @@ function App() {
 
   const retryFailedCodes = async () => {
     setIsRetried(true);
-    const { results, failedCodes } = await processRedemption(failedCodes);
+    const { results, failedCodes } = await processRedemptionWithConcurrency(failedCodes, 5);
 
     const successCount = results.length;
     const failedCount = failedCodes.length;
