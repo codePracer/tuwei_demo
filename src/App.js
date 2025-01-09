@@ -7,14 +7,14 @@ import Lottie from 'lottie-web';
 
 import animationData from './assets/loading-animation.json';  // 假设你有Lottie动画资源
 import {
-  apiRequest,
-  calculateProgress,
   fetchRewardData,
   getHistoryFromLocalStorage,
+  processRedemption,
   removeDuplicateCodes,
   saveHistoryToLocalStorage,
   validateActivationCodeFormat,
 } from './utils';
+import { reportWebVitals } from './web-vitals'; // 自定义Web Vitals报告函数
 
 function App() {
   const [codes, setCodes] = useState('');
@@ -42,6 +42,8 @@ function App() {
     // 加载历史记录
     const history = getHistoryFromLocalStorage();
     setActivationHistory(history);
+    // 捕获并报告 Web Vitals 性能指标
+    reportWebVitals(console.log); // 或发送到后端/Google Analytics等
   }, []);
 
   const handleCodeChange = (event) => {
@@ -65,31 +67,13 @@ function App() {
     setIsProcessing(true);
     setFailedCodes([]);
 
-    // 模拟批量兑换进度
-    let current = 0;
-    const total = uniqueCodes.length;
+    // 批量处理兑换
+    const { results, failedCodes } = await processRedemption(uniqueCodes);
 
-    const results = [];
-    const failedCodes = [];
-
-    for (let i = 0; i < total; i++) {
-      // 模拟API请求
-      const result = await apiRequest('/api/redeem', 'POST', { codes: [uniqueCodes[i]] });
-
-      if (result.success) {
-        results.push(result);
-      } else {
-        failedCodes.push(uniqueCodes[i]);
-      }
-
-      current++;
-      setProgress(calculateProgress(total, current));
-    }
-
-    // 汇总结果
     const successCount = results.length;
     const failedCount = failedCodes.length;
 
+    // 汇总结果
     setResult({ successCount, failedCount });
     setFailedCodes(failedCodes);
     setIsProcessing(false);
@@ -105,9 +89,23 @@ function App() {
 
   const retryFailedCodes = async () => {
     setIsRetried(true);
-    const failedCodesToRetry = failedCodes.slice();
-    setFailedCodes([]);
-    await redeemCodes(failedCodesToRetry);
+    const { results, failedCodes } = await processRedemption(failedCodes);
+
+    const successCount = results.length;
+    const failedCount = failedCodes.length;
+
+    // 汇总结果
+    setResult({ successCount, failedCount });
+    setFailedCodes(failedCodes);
+    setIsRetried(false);
+
+    // 更新历史记录
+    const newHistory = [
+      ...activationHistory,
+      { date: new Date(), successCount, failedCount, failedCodes },
+    ];
+    setActivationHistory(newHistory);
+    saveHistoryToLocalStorage(newHistory);
   };
 
   return (
@@ -150,7 +148,9 @@ function App() {
                   <li key={index}>{code}</li>
                 ))}
               </ul>
-              <button onClick={retryFailedCodes}>重试失败的兑换</button>
+              <button onClick={retryFailedCodes} disabled={isRetried}>
+                {isRetried ? '重试中...' : '重试失败的兑换'}
+              </button>
             </div>
           )}
         </div>

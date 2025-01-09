@@ -50,3 +50,21 @@ export function fetchRewardData(code) {
     amount: Math.floor(Math.random() * 10) + 1,
   };
 }
+
+// 批量处理兑换，返回每个激活码的兑换结果
+export async function processRedemption(codes) {
+  const results = [];
+  const failedCodes = [];
+
+  for (let i = 0; i < codes.length; i++) {
+    const result = await apiRequest('/api/redeem', 'POST', { codes: [codes[i]] });
+
+    if (result.success) {
+      results.push(result);
+    } else {
+      failedCodes.push(codes[i]);
+    }
+  }
+
+  return { results, failedCodes };
+}
