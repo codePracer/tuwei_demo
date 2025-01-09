@@ -68,3 +68,49 @@ export async function processRedemption(codes) {
 
   return { results, failedCodes };
 }
+
+// utils.js
+
+export const processRedemptionWithConcurrency = async (codes, maxConcurrency, updateProgressCallback) => {
+  let results = [];
+  let failedCodes = [];
+
+  const totalCodes = codes.length;
+  let processedCount = 0;
+
+  // 通过 Promise.all 创建并发请求
+  const processBatch = async (batch) => {
+    for (const code of batch) {
+      try {
+        // 假设这里是调用兑换 API
+        const response = await apiRequest(code);  // 替换为实际请求
+        if (response.success) {
+          results.push(response);
+        } else {
+          failedCodes.push(code);
+        }
+      } catch (error) {
+        failedCodes.push(code);
+      }
+      processedCount += 1;
+
+      // 调用进度更新回调
+      if (updateProgressCallback) {
+        updateProgressCallback(processedCount, totalCodes);
+      }
+    }
+  };
+
+  // 将 codes 按最大并发数进行分批处理
+  const batches = [];
+  while (codes.length) {
+    batches.push(codes.splice(0, maxConcurrency));
+  }
+
+  // 处理每一批次
+  for (const batch of batches) {
+    await processBatch(batch);
+  }
+
+  return { results, failedCodes };
+};

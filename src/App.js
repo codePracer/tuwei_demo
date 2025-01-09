@@ -69,9 +69,17 @@ function App() {
     const uniqueCodes = removeDuplicateCodes(codeArray);
     setIsProcessing(true);
     setFailedCodes([]);
+    setProgress(0);  // 初始化进度为0%
+
+    const totalCodes = uniqueCodes.length;
+    let processedCount = 0; // 已处理的兑换码数量
 
     // 批量处理兑换，设置最大并发数为5
-    const { results, failedCodes } = await processRedemptionWithConcurrency(uniqueCodes, 5);
+    const { results, failedCodes } = await processRedemptionWithConcurrency(uniqueCodes, 5, (processed, total) => {
+      processedCount = processed;
+      const progress = Math.round((processedCount / totalCodes) * 100);
+      setProgress(progress);  // 更新进度
+    });
 
     const successCount = results.length;
     const failedCount = failedCodes.length;
@@ -103,6 +111,7 @@ function App() {
     setActivationHistory(newHistory);
     saveHistoryToLocalStorage(newHistory);
   };
+
 
   const retryFailedCodes = async () => {
     setIsRetried(true);
