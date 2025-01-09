@@ -6,6 +6,7 @@ import React, {
 import Lottie from 'lottie-web';
 
 import animationData from './assets/loading-animation.json';  // 假设你有Lottie动画资源
+import SuccessAnimation from './assets/SuccessAnimation';  // 导入成功动画组件
 import {
   fetchRewardData,
   getHistoryFromLocalStorage,
@@ -134,6 +135,13 @@ function App() {
         </div>
       ) : (
         <button onClick={redeemCodes}>开始兑换</button>
+      )}
+
+      {isSuccess && !isProcessing && (
+        <div>
+          <h3>兑换成功!</h3>
+          <SuccessAnimation />  {/* 显示兑换成功的动画 */}
+        </div>
       )}
 
       {result && (
