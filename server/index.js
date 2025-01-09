@@ -10,7 +10,7 @@ import App from '../src/App'; // 共享的React组件
 const app = express();
 
 // 处理静态资源
-app.use('/public', express.static(path.resolve(__dirname, '../public')));
+app.use('/public', express.static(path.resolve(__dirname, '../dist')));
 
 // SSR路由
 app.get('/', (req, res) => {
