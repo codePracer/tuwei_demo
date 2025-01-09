@@ -5,8 +5,6 @@ import React, {
 
 import Lottie from 'lottie-web';
 
-import animationData from './assets/loading-animation.json';  // 加载等待动画
-import SuccessAnimation from './SuccessAnimation';  // 导入成功动画组件
 import {
   fetchRewardData,
   getHistoryFromLocalStorage,
@@ -14,7 +12,9 @@ import {
   removeDuplicateCodes,
   saveHistoryToLocalStorage,
   validateActivationCodeFormat,
-} from './utils';
+} from '../utils';
+import animationData from './assets/loading-animation.json';  // 加载等待动画
+import SuccessAnimation from './assets/SuccessAnimation';  // 导入成功动画组件
 import { reportWebVitals } from './web-vitals'; // 性能监控
 
 function App() {

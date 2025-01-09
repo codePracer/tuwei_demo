@@ -3,7 +3,7 @@ import React, { useEffect } from 'react';
 
 import Lottie from 'lottie-web';
 
-import successAnimationData from './assets/success-animation.json';  // 导入成功动画文件
+import successAnimationData from './success-animation.json';  // 导入成功动画文件
 
 const SuccessAnimation = () => {
   useEffect(() => {

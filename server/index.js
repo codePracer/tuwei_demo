@@ -33,6 +33,6 @@ app.get('/', (req, res) => {
 });
 
 // 启动服务
-app.listen(5000, () => {
-  console.log('SSR server is running on http://localhost:5000');
+app.listen(5001, () => {
+  console.log('SSR server is running on http://localhost:5001');
 });

@@ -15,6 +15,13 @@ module.exports = [
     module: {
       rules: [
         {
+          test: /\.json$/, // 匹配所有 .json 文件
+          type: 'asset/resource', // 采用 Webpack 5 自带的资源模块处理 JSON 文件
+          generator: {
+            filename: 'assets/[name].[hash][ext]', // 输出路径和文件名
+          },
+        },
+        {
           test: /\.(js|jsx)$/,
           exclude: /node_modules/,
           use: {
@@ -28,7 +35,7 @@ module.exports = [
       ]
     },
     resolve: {
-      extensions: ['.js', '.jsx']
+      extensions: ['.js', '.jsx', '.json']
     },
     plugins: [
       new WorkboxPlugin.GenerateSW({
@@ -72,7 +79,7 @@ module.exports = [
       ]
     },
     resolve: {
-      extensions: ['.js', '.jsx']
+      extensions: ['.js', '.jsx', '.json']
     }
   }
 ];
