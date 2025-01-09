@@ -41,6 +41,7 @@ function App() {
   }, [isProcessing]);
 
   useEffect(() => {
+    alert(888);
     // 加载历史记录
     const history = getHistoryFromLocalStorage();
     setActivationHistory(history);
@@ -54,13 +55,16 @@ function App() {
   };
 
   const validateCodes = () => {
+    alert(888);
     const codeArray = codes.split('\n').map((code) => code.trim());
     const validCodes = codeArray.filter(validateActivationCodeFormat);
     const uniqueCodes = removeDuplicateCodes(validCodes);
+    console.log('uniqueCodes', uniqueCodes);
     setCodes(uniqueCodes.join('\n'));
 
     // 更新待兑换内容预览
     const preview = uniqueCodes.map(fetchRewardData);
+    console.log('preview', preview);
     setRewardsPreview(preview);
   };
 
