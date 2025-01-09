@@ -1,0 +1,9 @@
+{
+  "presets": [
+    "@babel/preset-env", // 处理现代JavaScript语法
+    "@babel/preset-react" // 处理React JSX语法
+  ],
+  "plugins": [
+    "@babel/plugin-transform-runtime" // 用于减少重复代码，提高性能
+  ]
+}
